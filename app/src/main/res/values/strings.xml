@@ -3,4 +3,7 @@
     <string name="title">Contatos</string>
     <string name="error">Ocorreu um erro. Tente novamente.</string>
 
+    <string name="generic_error_title">Ops! Algo deu errado.</string>
+    <string name="generic_error_message">Já estamos cientes e trabalhando nisto. \nTente novamente em instantes.</string>
+
 </resources>
