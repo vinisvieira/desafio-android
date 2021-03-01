@@ -8,27 +8,29 @@ import com.picpay.desafio.android.common.ui.viewstate.ViewState
 import com.picpay.desafio.android.user.contacts.domain.FetchContactsUseCase
 import com.picpay.desafio.android.user.contacts.ui.extensions.toUserViewData
 import com.picpay.desafio.android.user.contacts.ui.model.UserViewData
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class MainViewModel(
-    private val fetchContactsUseCase: FetchContactsUseCase
+    private val fetchContactsUseCase: FetchContactsUseCase,
+    private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : ViewModel() {
 
     val fetchContactsLiveData = MutableLiveData<ViewState<List<UserViewData>>>()
 
     fun fetch() {
-        fetchContactsLiveData.value = ViewState.Loading
-        viewModelScope.launch(Dispatchers.IO) {
-            val result = fetchContactsUseCase.execute()
-            withContext(Dispatchers.Main) {
-                fetchContactsLiveData.value = when (result) {
-                    is State.Success -> ViewState.Success(result.data.toUserViewData())
-                    is State.Failure -> ViewState.Failure(result.error)
-                }
-                fetchContactsLiveData.value = ViewState.Done
+        viewModelScope.launch(Dispatchers.Main) {
+            fetchContactsLiveData.value = ViewState.Loading
+            val result = withContext(coroutineDispatcher) {
+                fetchContactsUseCase.execute()
             }
+            fetchContactsLiveData.value = when (result) {
+                is State.Success -> ViewState.Success(result.data.toUserViewData())
+                is State.Failure -> ViewState.Failure(result.error)
+            }
+            fetchContactsLiveData.value = ViewState.Done
         }
     }
 }
